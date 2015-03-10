@@ -38,10 +38,10 @@ static char *trd_event(rst_file_t *file, rst_event_t *event)
 
   //if header contains time data with the hour, read it
   if (header & RST_TIME_SET) {
-    timestamp_t seconds = (timestamp_t) RST_GET(ptr, timestamp_t);
-    timestamp_t resolution = (timestamp_t) RST_GET(ptr, timestamp_t);
-    file->resolution = resolution;
-    file->hour = seconds * resolution;
+    //timestamp_t seconds = (timestamp_t) RST_GET(ptr, timestamp_t);
+    //timestamp_t resolution = (timestamp_t) RST_GET(ptr, timestamp_t);
+    //file->resolution = resolution;
+    //file->hour = seconds * resolution;
   }
 
   //read the timestamp of this event, correct it according to the last hour
