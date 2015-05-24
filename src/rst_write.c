@@ -124,6 +124,65 @@ static void __rst_init(rst_buffer_t *ptr,
                                                       id1, id2, hostname);
 }
 
+//gives the user the possibility of seeting a name for their .rst file
+static void __rst_init_filename(rst_buffer_t *ptr,
+                       timestamp_t (*stamping) (void),
+                       timestamp_t (*resolution) (void),
+                       const char* filename)
+{
+  int fd;
+  char fname[30];
+  char hostname[MAXHOSTNAMELEN + 1];
+
+  if (ptr == NULL) {
+    fprintf(stderr, "[rastro] error inicializing - invalid pointer\n");
+    return;
+  }
+#ifdef LIBRASTRO_THREADED
+  static int rst_key_initialized = 0;
+  if (!rst_key_initialized) {
+    pthread_key_create(&rst_key, NULL);
+    rst_key_initialized = 1;
+  }
+#endif
+
+  //define the timestamp function to be used by librastro
+  rastro_timestamping = stamping;
+  rastro_timeresolution = resolution;
+
+  RST_SET_PTR(ptr);
+  ptr->write_first_hour = 1;
+  ptr->rst_buffer_size = 100000;
+  ptr->rst_buffer = malloc(ptr->rst_buffer_size);
+  bzero(ptr->rst_buffer, ptr->rst_buffer_size);
+  RST_RESET(ptr);
+
+  fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  if (fd == -1) {
+    fprintf(stderr, "[rastro] cannot open file %s: %s\n",
+            filename, strerror(errno));
+    return;
+  }
+
+  RST_SET_FD(ptr, fd);
+
+  // this will force first event to register sync time
+  RST_SET_T0(ptr, 0);
+
+  gethostname(hostname, sizeof(hostname));
+
+  XCAT(rst_event_, LETTER_UINT64, LETTER_STRING, _ptr) (ptr, RST_EVENT_INIT,
+                                                      0, 0, hostname);
+}
+
+//gives the user the possibility of seeting a name for their .rst file
+void rst_init_filename_(const char *filename)
+{
+  rst_buffer_t *ptr;
+  ptr = (rst_buffer_t *) malloc(sizeof(rst_buffer_t));
+  __rst_init_filename(ptr, &_rst_timestamping, &_rst_timeresolution, filename);
+}
+
 void rst_init(u_int64_t id1, u_int64_t id2)
 {
   rst_init_timestamp (id1, id2, &_rst_timestamping, &_rst_timeresolution);
