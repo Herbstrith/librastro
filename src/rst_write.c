@@ -176,7 +176,7 @@ static void __rst_init_filename(rst_buffer_t *ptr,
 }
 
 //gives the user the possibility of seeting a name for their .rst file
-void rst_init_filename_(const char *filename)
+void rst_init_filename(const char *filename)
 {
   rst_buffer_t *ptr;
   ptr = (rst_buffer_t *) malloc(sizeof(rst_buffer_t));
